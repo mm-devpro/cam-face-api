@@ -14,6 +14,8 @@ class Account(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     name = db.Column(db.String(255), nullable=False, unique=True)
 
+    users = db.relationship("User", back_populates='account', cascade="all, delete-orphan", uselist=True)
+
     def __init__(self, name):
         self.name = name
 
