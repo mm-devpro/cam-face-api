@@ -1,8 +1,8 @@
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from models.locker_model import Locker
-from database import ma
 
 
-class LockerSchema(ma.SQLAlchemyAutoSchema):
+class LockerSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Locker
         include_fk = True,

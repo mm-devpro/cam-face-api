@@ -10,7 +10,7 @@ class Account(db.Model):
     """
     __tablename__ = "account"
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     name = db.Column(db.String(255), nullable=False, unique=True)
 

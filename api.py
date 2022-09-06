@@ -1,13 +1,16 @@
 from os import getenv, path
 import sys
-from database import db
 from flask import Flask
 from flask_cors import CORS
 from flask_restful import Api
 from dotenv import load_dotenv
+from database import db
 
 from resources.account_resource import AccountResource, ACCOUNT_ENDPOINT
-
+from resources.auth_resource import LoginResource, LogoutResource, SignupResource, LOGOUT_ENDPOINT, LOGIN_ENDPOINT, \
+    SIGNUP_ENDPOINT
+from resources.user_resource import UserResource, USER_ENDPOINT
+from resources.profile_resource import ProfileResource, PROFILE_ENDPOINT
 
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
@@ -32,7 +35,7 @@ def create_app():
 
     # initiate api from flask-restful, and add cors configuration
     # api = Api(app)
-    CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
+    CORS(app, resources={r"/cam-api/v1/*": {"origins": "*"}})
 
     # initiate app database
     with app.app_context():
@@ -41,15 +44,16 @@ def create_app():
     api = Api(app)
 
     # routes
-    api.add_resource(AccountResource, ACCOUNT_ENDPOINT,  f"{ACCOUNT_ENDPOINT}/<account_id>")
+    api.add_resource(AccountResource, ACCOUNT_ENDPOINT, f"{ACCOUNT_ENDPOINT}/<account_id>")
+    api.add_resource(LoginResource, LOGIN_ENDPOINT)
+    api.add_resource(LogoutResource, LOGOUT_ENDPOINT)
+    api.add_resource(SignupResource, SIGNUP_ENDPOINT)
+    api.add_resource(UserResource, USER_ENDPOINT, f"{USER_ENDPOINT}/<user_id>")
+    api.add_resource(ProfileResource, PROFILE_ENDPOINT, f"{PROFILE_ENDPOINT}/<profile_id>")
 
     # blueprint for auth routes in our app
     # from routes.auth import auth as auth_blueprint
     # app.register_blueprint(auth_blueprint)
-    # blueprint for non-auth parts of app
-    # from routes.account import account as account_blueprint
-    # app.register_blueprint(account_blueprint)
-
 
     # decoding cookie before each request
     # app.before_request_funcs.setdefault(None, [decode_cookie])

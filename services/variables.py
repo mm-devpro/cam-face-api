@@ -37,3 +37,7 @@ LOCKER_ACCESS = [
     "4",
     "5"
 ]
+
+
+USER_VALIDATED_QUERY_ARGS = ['username', 'email', 'account_id', 'role']
+PROFILE_VALIDATED_QUERY_ARGS = ['name', 'surname']

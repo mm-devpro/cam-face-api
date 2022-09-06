@@ -21,8 +21,8 @@ class User(db.Model):
     # if user sets up his account within the app
     _password = db.Column(db.String(500), nullable=False)
 
-    username = db.Column(db.String(255), nullable=False)
-    email = db.Column(db.String(100), unique=True)
+    username = db.Column(db.String(255), nullable=False, unique=True)
+    email = db.Column(db.String(100), unique=True, nullable=False)
     role = db.Column(db.Enum(*USER_ROLES, *ADMIN_ROLES), server_default="user")
     img = db.Column(db.String(255), nullable=True)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
