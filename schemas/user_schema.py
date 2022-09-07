@@ -9,6 +9,7 @@ class UserSchema(SQLAlchemyAutoSchema):
         include_fk = True
         load_instance = True
         exclude = ("_password",)
+        include_relationships = True
 
     password = fields.Str(required=True)
 

@@ -4,7 +4,7 @@ from flask import request, abort, jsonify, g, make_response
 from database import db
 from models.user_model import User
 from schemas.user_schema import users_schema, user_schema
-from services.variables import USER_VALIDATED_QUERY_ARGS
+from services.variables import USER_VALIDATED_GET_ARGS
 
 USER_ENDPOINT = '/cam-api/v1/user'
 
@@ -14,7 +14,7 @@ class UserResource(Resource):
     def get(self, user_id=None):
         try:
             if not user_id:
-                args = {arg: request.args.get(arg) for arg in request.args if arg in USER_VALIDATED_QUERY_ARGS}
+                args = {arg: request.args.get(arg) for arg in request.args if arg in USER_VALIDATED_GET_ARGS}
                 users = self._get_all(args)
                 dumped = users_schema.dump(users)
             else:
@@ -37,13 +37,13 @@ class UserResource(Resource):
 
     def _get_all(self, data=None):
         if data:
-            users = User.query.filter_by(**data).all()
+            users = User.GET.filter_by(**data).all()
         else:
-            users = User.query.all()
+            users = User.GET.all()
         return users
 
     def _get_by_id(self, user_id):
-        user = User.query.filter_by(id=user_id).first()
+        user = User.GET.filter_by(id=user_id).first()
         return user
 
     def post(self):

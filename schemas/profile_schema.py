@@ -1,6 +1,7 @@
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
-from models.profile_model import Profile
 from marshmallow import fields
+from models.profile_model import Profile
+from schemas.access_schema import AccessSchema
 
 
 class ProfileSchema(SQLAlchemyAutoSchema):
@@ -8,7 +9,8 @@ class ProfileSchema(SQLAlchemyAutoSchema):
         model = Profile
         include_fk = True
         load_instance = True
-
+        include_relationships = True
+    access = fields.List(fields.Nested(AccessSchema(only=('group', 'account_id',))))
 
 profile_schema = ProfileSchema()
 profiles_schema = ProfileSchema(many=True)

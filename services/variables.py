@@ -39,5 +39,9 @@ LOCKER_ACCESS = [
 ]
 
 
-USER_VALIDATED_QUERY_ARGS = ['username', 'email', 'account_id', 'role']
-PROFILE_VALIDATED_QUERY_ARGS = ['name', 'surname']
+ACCESS_VALIDATED_GET_ARGS = ['group', 'digit_pwd', 'profile_id', 'account_id']
+ACCOUNT_VALIDATED_GET_ARGS = ['name', 'users', 'lockers', 'cameras']
+CAMERA_VALIDATED_GET_ARGS = ['source', 'active', 'account_id', 'locker_id']
+LOCKER_VALIDATED_GET_ARGS = ['name', 'access_lvl', 'type', 'locked', 'digit_activation', 'account_id', 'camera']
+PROFILE_VALIDATED_GET_ARGS = ['name', 'surname', 'dob', 'access']
+USER_VALIDATED_GET_ARGS = ['username', 'email', 'account_id', 'role']

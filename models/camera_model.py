@@ -14,8 +14,8 @@ class Camera(db.Model):
     active = db.Column(db.Boolean, default=False, server_default="0")
 
     account_id = db.Column(db.Integer, db.ForeignKey('account.id'), nullable=False)
-    account = db.relationship("Account", backref="cameras")
     locker_id = db.Column(db.Integer, db.ForeignKey('locker.id'), nullable=False)
 
     def __repr__(self):
         return f'<Camera "{self.source}...">'
+

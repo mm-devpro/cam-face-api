@@ -4,6 +4,7 @@ from flask import request, abort, jsonify, g, make_response
 from database import db
 from models.account_model import Account
 from schemas.account_schema import accounts_schema, account_schema
+from services.variables import ACCOUNT_VALIDATED_GET_ARGS
 
 ACCOUNT_ENDPOINT = '/cam-api/v1/account'
 
@@ -13,7 +14,7 @@ class AccountResource(Resource):
     def get(self, account_id=None):
         try:
             if not account_id:
-                args = {arg: request.args.get(arg) for arg in request.args if arg in ["name"]}
+                args = {arg: request.args.get(arg) for arg in request.args if arg in ACCOUNT_VALIDATED_GET_ARGS}
                 accounts = self._get_all(args)
                 dumped = accounts_schema.dump(accounts)
             else:
@@ -57,8 +58,8 @@ class AccountResource(Resource):
             ### add to database
             db.session.add(new_account)
             db.session.commit()
-            ### retrieve new user to send to front
-            v = account_schema.dump(new_account)
+            ### retrieve new account to send to front
+            a = account_schema.dump(new_account)
 
         except Exception as e:
             db.session.rollback()
@@ -68,7 +69,7 @@ class AccountResource(Resource):
             return make_response(jsonify({
                 "status": "success",
                 "message": "compte créé avec succès",
-                "account": v
+                "account": a
             }), 201)
 
     def put(self):

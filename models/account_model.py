@@ -14,6 +14,10 @@ class Account(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     name = db.Column(db.String(255), nullable=False, unique=True)
 
+    users = db.relationship("User", backref=db.backref("account"), cascade='all, delete_orphan', lazy=True, uselist=True)
+    lockers = db.relationship("Locker", backref=db.backref("account"), cascade='all, delete_orphan', lazy=True, uselist=True)
+    cameras = db.relationship("Camera", backref=db.backref("account"), cascade='all, delete_orphan', lazy=True, uselist=True)
+
     def __init__(self, name):
         self.name = name
 
