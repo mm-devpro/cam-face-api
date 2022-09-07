@@ -18,9 +18,5 @@ class Profile(db.Model):
 
     access = db.relationship('Account', secondary=access, backref='access', uselist=True)
 
-    # @property
-    # def dob(self):
-    #     return self.dob.isoformat()
-
     def __repr__(self):
         return f'<Profile "{self.surname + self.name}...">'
