@@ -5,7 +5,6 @@ from flask_cors import CORS
 from flask_restful import Api
 from dotenv import load_dotenv
 from database import db
-
 from resources.account_resource import AccountResource, ACCOUNT_ENDPOINT
 from resources.auth_resource import LoginResource, LogoutResource, SignupResource, LOGOUT_ENDPOINT, LOGIN_ENDPOINT, \
     SIGNUP_ENDPOINT
@@ -51,12 +50,9 @@ def create_app():
     api.add_resource(UserResource, USER_ENDPOINT, f"{USER_ENDPOINT}/<user_id>")
     api.add_resource(ProfileResource, PROFILE_ENDPOINT, f"{PROFILE_ENDPOINT}/<profile_id>")
 
-    # blueprint for auth routes in our app
-    # from routes.auth import auth as auth_blueprint
-    # app.register_blueprint(auth_blueprint)
-
     # decoding cookie before each request
     # app.before_request_funcs.setdefault(None, [decode_cookie])
+
     return app
 
 

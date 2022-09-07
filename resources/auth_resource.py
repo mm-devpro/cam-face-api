@@ -69,8 +69,11 @@ class SignupResource(Resource):
         if not json_data:
             abort(401, "data should be in json")
         try:
-            new_user = user_schema.load(json_data, session=db.session)
-            ### 1) Check if user is not in the db
+            ### 1) Validate fields from request
+            val_user = user_schema.dump(json_data)
+            ### 2) create new user
+            new_user = user_schema.load(val_user, session=db.session)
+            ### 3) Check if user is not in the db
             user = User.query.filter(User.email == new_user.email).first()
             if user is not None:
                 logging.warning("This user already exists")
@@ -78,13 +81,11 @@ class SignupResource(Resource):
                     "status": "error",
                     "message": "Cet utilisateur existe deja, veuillez vous connecter à la place"
                 }), 401)
-
-            ### 2) Add user to db
+            ### 4) Add user to db
             db.session.add(new_user)
             db.session.commit()
-
-            ### 3) Create a dump to send in front
-            dumped_user = user_schema.dump(new_user)
+            ### 5) Retrieve new user to send to front
+            u = user_schema.dump(new_user)
 
         except Exception as e:
             db.session.rollback()
@@ -94,5 +95,5 @@ class SignupResource(Resource):
             return make_response(jsonify({
                 "status": "success",
                 "message": "utilisateur créé avec succès",
-                "user": dumped_user
+                "user": u
             }), 201)

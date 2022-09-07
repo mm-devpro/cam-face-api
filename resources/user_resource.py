@@ -31,7 +31,8 @@ class UserResource(Resource):
             return make_response(jsonify({
                 "status": "success",
                 "message": "utilisateur(s) récupéré(s)",
-                "account": dumped
+                "user": dumped,
+                "result": len(dumped)
             }), 200)
 
     def _get_all(self, data=None):
@@ -50,11 +51,15 @@ class UserResource(Resource):
         if not json_data:
             abort(401, "data should be in json")
         try:
-            new_user = user_schema.load(json_data, session=db.session)
-
+            ### field validation (removing potential bad fields from request)
+            val_user = user_schema.dump(json_data)
+            ### load new user
+            new_user = user_schema.load(val_user, session=db.session)
+            ### add new user to db
             db.session.add(new_user)
             db.session.commit()
-            dumped_user = user_schema.dump(new_user)
+            ### get new user infos to send to front
+            u = user_schema.dump(new_user)
 
         except Exception as e:
             db.session.rollback()
@@ -64,7 +69,7 @@ class UserResource(Resource):
             return make_response(jsonify({
                 "status": "success",
                 "message": "utilisateur créé avec succès",
-                "user": dumped_user
+                "user": u
             }), 201)
 
     def put(self):

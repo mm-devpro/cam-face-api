@@ -6,7 +6,7 @@ from models.user_model import User
 class UserSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = User
-        include_fk = True,
+        include_fk = True
         load_instance = True
         exclude = ("_password",)
 

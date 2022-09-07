@@ -30,7 +30,8 @@ class AccountResource(Resource):
             return make_response(jsonify({
                 "status": "success",
                 "message": "compte(s) récupéré(s)",
-                "account": dumped
+                "account": dumped,
+                "result": len(dumped)
             }), 200)
 
     def _get_all(self, data=None):
@@ -49,11 +50,15 @@ class AccountResource(Resource):
         if not json_data:
             abort(401, "data should be in json")
         try:
-            new_account = account_schema.load(json_data, session=db.session)
-
+            ### validate data
+            val_account = account_schema.dump(json_data)
+            ### create new account
+            new_account = account_schema.load(val_account, session=db.session)
+            ### add to database
             db.session.add(new_account)
             db.session.commit()
-            dumped_account = account_schema.dump(new_account)
+            ### retrieve new user to send to front
+            v = account_schema.dump(new_account)
 
         except Exception as e:
             db.session.rollback()
@@ -63,7 +68,7 @@ class AccountResource(Resource):
             return make_response(jsonify({
                 "status": "success",
                 "message": "compte créé avec succès",
-                "account": dumped_account
+                "account": v
             }), 201)
 
     def put(self):

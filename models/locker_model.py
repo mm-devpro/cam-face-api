@@ -1,5 +1,5 @@
-from services.variables import LOCKER_TYPE, LOCKER_ACCESS
 from database import db
+from services.variables import LOCKER_TYPE, LOCKER_ACCESS
 
 
 class Locker(db.Model):

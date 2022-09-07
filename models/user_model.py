@@ -30,7 +30,6 @@ class User(db.Model):
     last_login = db.Column(db.DateTime(timezone=True), nullable=True)
 
     account_id = db.Column(db.Integer, db.ForeignKey("account.id"))
-    account = db.relationship("Account", back_populates="users")
 
     def __repr__(self):
         return f'<User "{self.username}...">'
