@@ -10,7 +10,11 @@ class AccessSchema(SQLAlchemyAutoSchema):
         load_instance = True
         include_fk = True
         include_relationships = True
+        exclude = ("_password",)
+
+    password = fields.Str()
     users = fields.List(fields.Nested(UserSchema))
+
 
 access_schema = AccessSchema()
 accesses_schema = AccessSchema(many=True)

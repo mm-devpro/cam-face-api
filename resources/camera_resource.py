@@ -128,7 +128,7 @@ class CameraResource(Resource):
                 "camera": cam
             }), 200)
 
-    def __del__(self, camera_id):
+    def delete(self, camera_id):
         try:
             # Validate current user to be at least admin to allow access
             if self._admin_val is False:
