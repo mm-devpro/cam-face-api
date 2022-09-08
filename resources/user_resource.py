@@ -12,6 +12,11 @@ USER_ENDPOINT = '/cam-api/v1/user'
 
 class UserResource(Resource):
 
+    def __init__(self):
+        self._admin_val = is_admin(g, ['admin', 'super-admin'])
+        self._super_admin_val = is_admin(g, ['super-admin'])
+        self._curr_account = g.cookie['user']['account']
+
     def get(self, user_id=None):
         try:
             if not user_id:
@@ -38,12 +43,12 @@ class UserResource(Resource):
 
     def _get_all(self, data=None):
         # get Users from the current account
-        users = User.query.filter_by(account_id=g.cookie['user']['account'], **data).all()
+        users = User.query.filter_by(account_id=self._curr_account, **data).all()
         return users
 
     def _get_by_id(self, user_id):
         # Get User for the current account
-        user = User.query.filter_by(account_id=g.cookie['user']['account'], id=user_id).first()
+        user = User.query.filter_by(account_id=self._curr_account, id=user_id).first()
         return user
 
     def post(self):
@@ -51,10 +56,16 @@ class UserResource(Resource):
         if not json_data:
             abort(401, "data should be in json")
         try:
+            # only (super)admin can create new user
+            if self._admin_val is False:
+                return make_response(jsonify({
+                    "status": "error",
+                    "message": "Accès non authorisé",
+                }), 403)
             # field validation (removing potential bad fields from request)
-            val_user = user_schema.dump(json_data)
+            val_data = {k: v for (k, v) in json_data.items() if k in USER_VALIDATED_ARGS}
             # load new user
-            new_user = user_schema.load(val_user, session=db.session)
+            new_user = user_schema.load(val_data, session=db.session)
             # add new user to db
             db.session.add(new_user)
             # link new user to current account
@@ -78,9 +89,7 @@ class UserResource(Resource):
         json_data = request.get_json()
         if not json_data:
             abort(401, "data should be in json")
-        admin_val = is_admin(g, ['admin', 'super-admin'])
-        super_admin_val = is_admin(g, ['super-admin'])
-        curr_account = g.cookie['user']['account']
+
         try:
             # validate data
             val_data = {k: v for (k, v) in json_data.items() if k in USER_VALIDATED_ARGS}
@@ -93,12 +102,12 @@ class UserResource(Resource):
                 # retrieve user with id
                 user = self._get_by_id(user_id)
 
-                if user.account_id != curr_account:
+                if user.account_id != self._curr_account:
                     """
                     OUTSIDE OF THE ACCOUNT SCOPE
                     """
                     # you must be super-admin
-                    if super_admin_val is False:
+                    if self._super_admin_val is False:
                         return make_response(jsonify({
                             "status": "error",
                             "message": "Accès non authorisé",
@@ -108,7 +117,7 @@ class UserResource(Resource):
                     INSIDE THE ACCOUNT SCOPE
                     """
                     # you must be at least admin
-                    if admin_val is False:
+                    if self._admin_val is False:
                         return make_response(jsonify({
                             "status": "error",
                             "message": "Accès non authorisé",
@@ -139,11 +148,9 @@ class UserResource(Resource):
             }), 200)
 
     def delete(self, user_id=None):
-        admin_val = is_admin(g, ['admin', 'super-admin'])
-        curr_account = g.cookie['user']['account']
         try:
             # Validate current user to be at least admin to allow access
-            if admin_val is False:
+            if self._admin_val is False:
                 return make_response(jsonify({
                     "status": "error",
                     "message": "Accès non authorisé",
@@ -157,7 +164,7 @@ class UserResource(Resource):
             if acc_to_del is None:
                 abort(403, "Pas de compte correspondant à l'id")
             # Validate that user is in Account Scope
-            elif acc_to_del.account_id != curr_account:
+            elif acc_to_del.account_id != self._curr_account:
                 return make_response(jsonify({
                     "status": "error",
                     "message": "Accès non authorisé",

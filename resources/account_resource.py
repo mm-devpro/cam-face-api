@@ -12,10 +12,15 @@ ACCOUNT_ENDPOINT = '/cam-api/v1/account'
 
 class AccountResource(Resource):
 
+    def __init__(self):
+        self._admin_val = is_admin(g, ['admin', 'super-admin'])
+        self._super_admin_val = is_admin(g, ['super-admin'])
+        self._curr_account = g.cookie['user']['account']
+
     def get(self, account_id=None):
         try:
             if account_id is not None:
-                account = self._get_by_id()
+                account = self._get_by_id(account_id)
                 dumped = account_schema.dump(account)
             else:
                 args = {arg: request.args.get(arg) for arg in request.args if arg in ACCOUNT_VALIDATED_GET_ARGS}
@@ -49,10 +54,16 @@ class AccountResource(Resource):
         if not json_data:
             abort(401, "data should be in json")
         try:
+            # only super-admin can create new account
+            if self._super_admin_val is False:
+                return make_response(jsonify({
+                    "status": "error",
+                    "message": "Accès non authorisé",
+                }), 403)
             # validate data
-            val_account = account_schema.dump(json_data)
+            val_data = {k: v for (k, v) in json_data.items() if k in ACCOUNT_VALIDATED_GET_ARGS}
             # create new account
-            new_account = account_schema.load(val_account, session=db.session)
+            new_account = account_schema.load(val_data, session=db.session)
             # add to database
             db.session.add(new_account)
             db.session.commit()
@@ -74,8 +85,6 @@ class AccountResource(Resource):
         json_data = request.get_json()
         if not json_data:
             abort(401, "data should be in json")
-        admin_val = is_admin(g, ['admin', 'super-admin'])
-        super_admin_val = is_admin(g, ['super-admin'])
         try:
             # validate data
             val_data = {k: v for (k, v) in json_data.items() if k in ACCOUNT_VALIDATED_ARGS}
@@ -83,7 +92,7 @@ class AccountResource(Resource):
             1) FOR CURRENT ACCOUNT UPDATE
             """
             # Validate current user to be admin or super-admin to allow account update
-            if admin_val is False:
+            if self._admin_val is False:
                 return make_response(jsonify({
                     "status": "error",
                     "message": "Accès non authorisé",
@@ -93,7 +102,7 @@ class AccountResource(Resource):
             """
             # if account_id is not None, meaning you update another account, current user must be super-admin
             if account_id is not None:
-                if super_admin_val is False:
+                if self._super_admin_val is False:
                     return make_response(jsonify({
                         "status": "error",
                         "message": "Accès non authorisé",
@@ -102,7 +111,7 @@ class AccountResource(Resource):
                     account = self._get_by_id(account_id)
             else:
                 # for current account
-                account = Account.query.filter_by(id=g.cookie['user']['account'])
+                account = Account.query.filter_by(id=self._curr_account)
             # update account with new values
             for k, v in val_data.items():
                 setattr(account, k, v)
@@ -123,8 +132,7 @@ class AccountResource(Resource):
     def delete(self, account_id):
         try:
             # Validate current user to be super admin to allow access
-            super_admin_val = is_admin(g, ['super-admin'])
-            if super_admin_val is False:
+            if self._super_admin_val is False:
                 return make_response(jsonify({
                     "status": "error",
                     "message": "Accès non authorisé",

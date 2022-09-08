@@ -16,6 +16,11 @@ PROFILE_ENDPOINT = '/cam-api/v1/profile'
 
 class ProfileResource(Resource):
 
+    def __init__(self):
+        self._admin_val = is_admin(g, ['admin', 'super-admin'])
+        self._super_admin_val = is_admin(g, ['super-admin'])
+        self._curr_account = g.cookie['user']['account']
+
     def get(self, profile_id=None):
         try:
             if not profile_id:
@@ -89,8 +94,6 @@ class ProfileResource(Resource):
         json_data = request.get_json()
         if not json_data:
             abort(401, "data should be in json")
-        admin_val = is_admin(g, ['admin', 'super-admin'])
-        curr_account = g.cookie['user']['account']
         try:
             # validate data
             profile_val_data = {k: v for (k, v) in json_data.items() if k in PROFILE_VALIDATED_ARGS}
@@ -109,12 +112,12 @@ class ProfileResource(Resource):
             """
             UPDATE ACCESS
             """
-            access = Access.query.get(profile_id=pr.id, account_id=curr_account).first()
+            access = Access.query.get(profile_id=profile.id, account_id=self._curr_account).first()
             if access is None:
                 abort(401, "Pas d'accès correspondant")
             else:
                 # You must be at least admin to update an access
-                if admin_val is True:
+                if self._admin_val is True:
                     for k, v in access_val_data.items():
                         setattr(access, k, v)
                     db.session.commit()
@@ -136,8 +139,7 @@ class ProfileResource(Resource):
     def delete(self, profile_id):
         try:
             # Validate current user to be super admin to allow access
-            super_admin_val = is_admin(g, ['super-admin'])
-            if super_admin_val is False:
+            if self._super_admin_val is False:
                 return make_response(jsonify({
                     "status": "error",
                     "message": "Accès non authorisé",
@@ -160,3 +162,4 @@ class ProfileResource(Resource):
                 "status": "success",
                 "message": "profil supprimé avec succès",
             }), 200)
+
