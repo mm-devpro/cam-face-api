@@ -80,3 +80,7 @@ def require_login(func):
         # IF YES, validate by returning the decorated func
         return func(*args, **kwargs)
     return wrapper
+
+
+def is_admin(g, type:list):
+    return g.cookie['user']['role'] in type

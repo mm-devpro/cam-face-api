@@ -1,6 +1,6 @@
 from sqlalchemy.sql import func
 from database import db
-from services.variables import PROFILE_GROUP
+from services.variables import PROFILE_GROUP, LOCKER_ACCESS
 
 
 class Access(db.Model):
@@ -11,6 +11,7 @@ class Access(db.Model):
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
     group = db.Column(db.Enum(*PROFILE_GROUP.keys()), server_default="invite")
     digit_pwd = db.Column(db.String(6), server_default="123456")
+    access_lvl = db.Column(db.Enum(*LOCKER_ACCESS.keys()), nullable=False)
 
     profile_id = db.Column(db.Integer, db.ForeignKey("profile.id"), nullable=False)
     account_id = db.Column(db.Integer, db.ForeignKey("account.id"), nullable=False)

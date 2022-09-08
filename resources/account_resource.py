@@ -5,16 +5,17 @@ from database import db
 from models.account_model import Account
 from schemas.account_schema import accounts_schema, account_schema
 from services.variables import ACCOUNT_VALIDATED_ARGS, ACCOUNT_VALIDATED_GET_ARGS
+from services.auth import is_admin
 
 ACCOUNT_ENDPOINT = '/cam-api/v1/account'
 
 
 class AccountResource(Resource):
 
-    def get(self, curr=False):
+    def get(self, account_id=None):
         try:
-            if curr:
-                account = self._get_curr()
+            if account_id is not None:
+                account = self._get_by_id()
                 dumped = account_schema.dump(account)
             else:
                 args = {arg: request.args.get(arg) for arg in request.args if arg in ACCOUNT_VALIDATED_GET_ARGS}
@@ -39,8 +40,8 @@ class AccountResource(Resource):
         accounts = Account.query.filter_by(**data).all()
         return accounts
 
-    def _get_curr(self):
-        account = Account.query.filter_by(id=g.cookie['user']['account']).first()
+    def _get_by_id(self, account_id):
+        account = Account.query.filter_by(id=account_id).first()
         return account
 
     def post(self):
@@ -48,14 +49,14 @@ class AccountResource(Resource):
         if not json_data:
             abort(401, "data should be in json")
         try:
-            ### validate data
+            # validate data
             val_account = account_schema.dump(json_data)
-            ### create new account
+            # create new account
             new_account = account_schema.load(val_account, session=db.session)
-            ### add to database
+            # add to database
             db.session.add(new_account)
             db.session.commit()
-            ### retrieve new account to send to front
+            # retrieve new account to send to front
             a = account_schema.dump(new_account)
 
         except Exception as e:
@@ -73,19 +74,40 @@ class AccountResource(Resource):
         json_data = request.get_json()
         if not json_data:
             abort(401, "data should be in json")
+        admin_val = is_admin(g, ['admin', 'super-admin'])
+        super_admin_val = is_admin(g, ['super-admin'])
         try:
-            ### validate data
+            # validate data
             val_data = {k: v for (k, v) in json_data.items() if k in ACCOUNT_VALIDATED_ARGS}
-            ### retrieve chosen or current account
+            """
+            1) FOR CURRENT ACCOUNT UPDATE
+            """
+            # Validate current user to be admin or super-admin to allow account update
+            if admin_val is False:
+                return make_response(jsonify({
+                    "status": "error",
+                    "message": "Accès non authorisé",
+                }), 403)
+            """
+            2) FOR ANOTHER ACCOUNT UPDATE
+            """
+            # if account_id is not None, meaning you update another account, current user must be super-admin
             if account_id is not None:
-                account = Account.query.filter_by(id=account_id).first()
+                if super_admin_val is False:
+                    return make_response(jsonify({
+                        "status": "error",
+                        "message": "Accès non authorisé",
+                    }), 403)
+                else:
+                    account = self._get_by_id(account_id)
             else:
-                account = self._get_curr()
-            ### update account with new values
+                # for current account
+                account = Account.query.filter_by(id=g.cookie['user']['account'])
+            # update account with new values
             for k, v in val_data.items():
                 setattr(account, k, v)
             db.session.commit()
-            ### dump account to send to front
+            # dump account to send to front
             a = account_schema.dump(account)
         except Exception as e:
             db.session.rollback()
@@ -100,9 +122,17 @@ class AccountResource(Resource):
 
     def delete(self, account_id):
         try:
-            acc_to_del = Account.query.filter_by(id=account_id).first()
+            # Validate current user to be super admin to allow access
+            super_admin_val = is_admin(g, ['super-admin'])
+            if super_admin_val is False:
+                return make_response(jsonify({
+                    "status": "error",
+                    "message": "Accès non authorisé",
+                }), 403)
+
+            acc_to_del = self._get_by_id(account_id)
             if acc_to_del is None:
-                abort(403, "Pas de compte correspondant à l'id")
+                abort(401, "Pas de compte correspondant à l'id")
             else:
                 db.session.delete(acc_to_del)
                 db.session.commit()

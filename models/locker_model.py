@@ -12,7 +12,7 @@ class Locker(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    access_lvl = db.Column(db.Enum(*LOCKER_ACCESS), nullable=False)
+    access_lvl = db.Column(db.Enum(*LOCKER_ACCESS.keys()), nullable=False)
     type = db.Column(db.Enum(*LOCKER_TYPE), server_default="door")
     locked = db.Column(db.Boolean, default=True, server_default="1")
     digit_activation = db.Column(db.Boolean, default=True, server_default="1")

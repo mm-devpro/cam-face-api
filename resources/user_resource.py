@@ -4,7 +4,8 @@ from flask import request, abort, jsonify, g, make_response
 from database import db
 from models.user_model import User
 from schemas.user_schema import users_schema, user_schema
-from services.variables import USER_VALIDATED_GET_ARGS
+from services.variables import USER_VALIDATED_GET_ARGS, USER_VALIDATED_ARGS
+from services.auth import is_admin
 
 USER_ENDPOINT = '/cam-api/v1/user'
 
@@ -50,16 +51,16 @@ class UserResource(Resource):
         if not json_data:
             abort(401, "data should be in json")
         try:
-            ### field validation (removing potential bad fields from request)
+            # field validation (removing potential bad fields from request)
             val_user = user_schema.dump(json_data)
-            ### load new user
+            # load new user
             new_user = user_schema.load(val_user, session=db.session)
-            ### add new user to db
+            # add new user to db
             db.session.add(new_user)
-            ### link new user to current account
+            # link new user to current account
             new_user.account_id = g.cookie['user']['account']
             db.session.commit()
-            ### get new user infos to send to front
+            # get new user infos to send to front
             u = user_schema.dump(new_user)
 
         except Exception as e:
@@ -73,9 +74,104 @@ class UserResource(Resource):
                 "user": u
             }), 201)
 
-    def put(self):
-        pass
+    def put(self, user_id=None):
+        json_data = request.get_json()
+        if not json_data:
+            abort(401, "data should be in json")
+        admin_val = is_admin(g, ['admin', 'super-admin'])
+        super_admin_val = is_admin(g, ['super-admin'])
+        curr_account = g.cookie['user']['account']
+        try:
+            # validate data
+            val_data = {k: v for (k, v) in json_data.items() if k in USER_VALIDATED_ARGS}
+            # retrieve user to update
 
-    def delete(self):
-        pass
+            if user_id is not None:
+                """
+                RETRIEVE ANOTHER USER THAN CURRENT
+                """
+                # retrieve user with id
+                user = self._get_by_id(user_id)
+
+                if user.account_id != curr_account:
+                    """
+                    OUTSIDE OF THE ACCOUNT SCOPE
+                    """
+                    # you must be super-admin
+                    if super_admin_val is False:
+                        return make_response(jsonify({
+                            "status": "error",
+                            "message": "Accès non authorisé",
+                        }), 403)
+                else:
+                    """
+                    INSIDE THE ACCOUNT SCOPE
+                    """
+                    # you must be at least admin
+                    if admin_val is False:
+                        return make_response(jsonify({
+                            "status": "error",
+                            "message": "Accès non authorisé",
+                        }), 403)
+            else:
+                """
+                RETRIEVE CURRENT USER
+                """
+                user = self._get_by_id(g.cookie['id'])
+
+            # update user with new values
+            for k, v in val_data.items():
+                setattr(user, k, v)
+            db.session.commit()
+
+            # dump user to send it to front
+            u = user_schema.dump(user)
+
+        except Exception as e:
+            db.session.rollback()
+            logging.warning(e)
+            abort(403, f"Probleme pour actualiser l'utilisateur: {e}")
+        else:
+            return make_response(jsonify({
+                "status": "success",
+                "message": "utilisateur modifié avec succès",
+                "user": u
+            }), 200)
+
+    def delete(self, user_id=None):
+        admin_val = is_admin(g, ['admin', 'super-admin'])
+        curr_account = g.cookie['user']['account']
+        try:
+            # Validate current user to be at least admin to allow access
+            if admin_val is False:
+                return make_response(jsonify({
+                    "status": "error",
+                    "message": "Accès non authorisé",
+                }), 403)
+            # retrieve user
+            if user_id is not None:
+                acc_to_del = self._get_by_id(user_id)
+            else:
+                acc_to_del = self._get_by_id(g.cookie["id"])
+            # check if user exists
+            if acc_to_del is None:
+                abort(403, "Pas de compte correspondant à l'id")
+            # Validate that user is in Account Scope
+            elif acc_to_del.account_id != curr_account:
+                return make_response(jsonify({
+                    "status": "error",
+                    "message": "Accès non authorisé",
+                }), 403)
+            else:
+                db.session.delete(acc_to_del)
+                db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            logging.warning(e)
+            abort(403, f"Probleme pour supprimer le compte: {e}")
+        else:
+            return make_response(jsonify({
+                "status": "success",
+                "message": "utilisateur supprimé avec succès",
+            }), 200)
 
