@@ -36,14 +36,13 @@ class UserResource(Resource):
             }), 200)
 
     def _get_all(self, data=None):
-        if data:
-            users = User.GET.filter_by(**data).all()
-        else:
-            users = User.GET.all()
+        # get Users from the current account
+        users = User.query.filter_by(account_id=g.cookie['user']['account'], **data).all()
         return users
 
     def _get_by_id(self, user_id):
-        user = User.GET.filter_by(id=user_id).first()
+        # Get User for the current account
+        user = User.query.filter_by(account_id=g.cookie['user']['account'], id=user_id).first()
         return user
 
     def post(self):
@@ -57,6 +56,8 @@ class UserResource(Resource):
             new_user = user_schema.load(val_user, session=db.session)
             ### add new user to db
             db.session.add(new_user)
+            ### link new user to current account
+            new_user.account_id = g.cookie['user']['account']
             db.session.commit()
             ### get new user infos to send to front
             u = user_schema.dump(new_user)
@@ -75,6 +76,6 @@ class UserResource(Resource):
     def put(self):
         pass
 
-    def __del__(self):
+    def delete(self):
         pass
 

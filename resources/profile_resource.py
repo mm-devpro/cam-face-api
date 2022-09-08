@@ -1,13 +1,13 @@
 import logging
 from flask_restful import Resource
-from flask import request, abort, jsonify, make_response
+from flask import request, abort, jsonify, make_response, g
 from database import db
 from models.profile_model import Profile
 from models.account_model import Account
 from models.access_model import Access
 from schemas.profile_schema import profile_schema, profiles_schema
 from schemas.access_schema import accesses_schema, access_schema
-from services.variables import PROFILE_VALIDATED_GET_ARGS, ACCESS_VALIDATED_GET_ARGS
+from services.variables import PROFILE_VALIDATED_GET_ARGS, ACCESS_VALIDATED_GET_ARGS, ACCESS_VALIDATED_ARGS, PROFILE_VALIDATED_ARGS
 from services.methods import string_to_iso_format
 
 PROFILE_ENDPOINT = '/cam-api/v1/profile'
@@ -40,10 +40,7 @@ class ProfileResource(Resource):
             }), 200)
 
     def _get_all(self, data=None):
-        if data:
-            profiles = Profile.query.filter_by(**data).all()
-        else:
-            profiles = Profile.query.all()
+        profiles = Profile.query.filter_by(**data).all()
         return profiles
 
     def _get_by_id(self, profile_id):
@@ -59,21 +56,19 @@ class ProfileResource(Resource):
             if 'dob' in json_data.keys():
                 json_data['dob'] = string_to_iso_format(json_data['dob'])
             ### validate fields from request
-            val_data = {k: v for (k, v) in json_data.items() if k in PROFILE_VALIDATED_GET_ARGS}
+            val_data = {k: v for (k, v) in json_data.items() if k in PROFILE_VALIDATED_ARGS}
             ### create new profile
             new_profile = profile_schema.load(val_data, session=db.session)
             ### add profile to db
             db.session.add(new_profile)
+            db.session.commit()
+
             ### add link between profile and account to "access" table, take account_id from cookie
-            if 'account_id' in json_data.keys():
-                account_id = json_data['account_id']
-                account = Account.query.filter_by(id=account_id).first()
-                if account is not None:
-                    val_access = {k: v for (k, v) in json_data.items() if k in ACCESS_VALIDATED_GET_ARGS}
-                    val_access['account_id'] = account_id
-                    val_access['profile_id'] = new_profile.id
-                    new_access = access_schema.load(val_access, session=db.session)
-                    db.session.add(new_access)
+            val_access = {k: v for (k, v) in json_data.items() if k in ACCESS_VALIDATED_ARGS}
+            val_access['account_id'] = g.cookie['user']['account']
+            val_access['profile_id'] = new_profile.id
+            new_access = access_schema.load(val_access, session=db.session)
+            db.session.add(new_access)
             db.session.commit()
             ### retrieve new profile infos to send to front
             p = profile_schema.dump(new_profile)

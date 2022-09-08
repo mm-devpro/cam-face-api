@@ -8,19 +8,19 @@ ADMIN_ROLES = [
     "super-admin"
 ]
 
-PROFILE_GROUP = [
-    "All Access",
-    "Collaborator",
-    "Manager",
-    "Director",
-    "Customer",
-    "VIP",
-    "Owner",
-    "Partner",
-    "Family Member",
-    "Friend",
-    "Invite"
-]
+PROFILE_GROUP = {
+    "acc": "all access",
+    "coll": "collaborator",
+    "ma": "manager",
+    "dir": "director",
+    "cus": "customer",
+    "vip": "vip",
+    "own": "owner",
+    "par": "partner",
+    "fam": "family",
+    "fr": "friend",
+    "inv": "invite"
+}
 
 LOCKER_TYPE = [
     "door",
@@ -38,10 +38,17 @@ LOCKER_ACCESS = [
     "5"
 ]
 
-
-ACCESS_VALIDATED_GET_ARGS = ['group', 'digit_pwd', 'profile_id', 'account_id']
-ACCOUNT_VALIDATED_GET_ARGS = ['name', 'users', 'lockers', 'cameras']
-CAMERA_VALIDATED_GET_ARGS = ['source', 'active', 'account_id', 'locker_id']
-LOCKER_VALIDATED_GET_ARGS = ['name', 'access_lvl', 'type', 'locked', 'digit_activation', 'account_id', 'camera']
-PROFILE_VALIDATED_GET_ARGS = ['name', 'surname', 'dob', 'access']
-USER_VALIDATED_GET_ARGS = ['username', 'email', 'account_id', 'role']
+# Validation args for "GET" Methods
+ACCESS_VALIDATED_GET_ARGS = ['group', 'digit_pwd', 'profile_id']
+ACCOUNT_VALIDATED_GET_ARGS = ['name']
+CAMERA_VALIDATED_GET_ARGS = ['source', 'active']
+LOCKER_VALIDATED_GET_ARGS = ['name', 'access_lvl', 'type', 'locked', 'digit_activation']
+PROFILE_VALIDATED_GET_ARGS = ['name', 'surname', 'dob']
+USER_VALIDATED_GET_ARGS = ['username', 'email', 'role']
+# Validation args for "POST" "PUT" "DELETE" Methods
+ACCESS_VALIDATED_ARGS = ['group', 'digit_pwd']
+ACCOUNT_VALIDATED_ARGS = ['name']
+CAMERA_VALIDATED_ARGS = ['source', 'active']
+LOCKER_VALIDATED_ARGS = ['name', 'access_lvl', 'type', 'locked', 'digit_activation']
+PROFILE_VALIDATED_ARGS = ['name', 'surname', 'dob']
+USER_VALIDATED_ARGS = ['username', 'email', 'role']

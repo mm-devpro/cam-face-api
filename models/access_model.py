@@ -9,11 +9,11 @@ class Access(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
-    group = db.Column(db.Enum(*PROFILE_GROUP), server_default="invite")
-    digit_pwd = db.Column(db.String(4), server_default="1234")
+    group = db.Column(db.Enum(*PROFILE_GROUP.keys()), server_default="invite")
+    digit_pwd = db.Column(db.String(6), server_default="123456")
 
-    profile_id = db.Column(db.Integer, db.ForeignKey('profile.id'), nullable=False)
-    account_id = db.Column(db.Integer, db.ForeignKey('account.id'), nullable=False)
+    profile_id = db.Column(db.Integer, db.ForeignKey("profile.id"), nullable=False)
+    account_id = db.Column(db.Integer, db.ForeignKey("account.id"), nullable=False)
 
     def __repr__(self):
         return f'<Profile "{self.surname + self.name}...">'

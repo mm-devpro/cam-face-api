@@ -76,9 +76,6 @@ def require_login(func):
             response = make_response("", 401)
             response.set_cookie("user", "")
             return response
-        else:
-            role = g.user.role
-            print(f"role from require login: \n {role}")
 
         # IF YES, validate by returning the decorated func
         return func(*args, **kwargs)

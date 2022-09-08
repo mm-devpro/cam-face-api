@@ -7,8 +7,8 @@ from schemas.access_schema import AccessSchema
 class ProfileSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Profile
-        include_fk = True
         load_instance = True
+        include_fk = True
         include_relationships = True
     access = fields.List(fields.Nested(AccessSchema(only=('group', 'account_id',))))
 

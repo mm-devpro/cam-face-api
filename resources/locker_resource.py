@@ -26,7 +26,7 @@ class LockerResource(Resource):
 
         except Exception as e:
             logging.warning(e)
-            abort(400, "pas de compte correspondant")
+            abort(400, "pas de locker correspondant")
         else:
             return make_response(jsonify({
                 "status": "success",
@@ -36,14 +36,12 @@ class LockerResource(Resource):
             }), 200)
 
     def _get_all(self, data=None):
-        if data:
-            lockers = Locker.query.filter_by(**data).all()
-        else:
-            lockers = Locker.query.all()
+        # Only get lockers for the current account
+        lockers = Locker.query.filter_by(account_id=g.cookie['user']['account'], **data).all()
         return lockers
 
     def _get_by_id(self, locker_id):
-        locker = Locker.query.filter_by(id=locker_id).first()
+        locker = Locker.query.filter_by(account_id=g.cookie['user']['account'], id=locker_id).first()
         return locker
 
     def post(self):
@@ -57,6 +55,8 @@ class LockerResource(Resource):
             new_locker = locker_schema.load(val_locker, session=db.session)
             ### add to database
             db.session.add(new_locker)
+            ### link new locker to current account
+            new_locker.account_id = g.cookie['user']['account']
             db.session.commit()
             ### retrieve new locker to send to front
             lo = locker_schema.dump(new_locker)
@@ -64,11 +64,11 @@ class LockerResource(Resource):
         except Exception as e:
             db.session.rollback()
             logging.warning(e)
-            abort(403, "Ce compte est deja existant")
+            abort(403, "Ce locker est deja existant")
         else:
             return make_response(jsonify({
                 "status": "success",
-                "message": "compte créé avec succès",
+                "message": "locker créé avec succès",
                 "locker": lo
             }), 201)
 

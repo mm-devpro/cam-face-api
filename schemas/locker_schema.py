@@ -7,6 +7,7 @@ from schemas.camera_schema import CameraSchema
 class LockerSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Locker
+        load_instance = True
         include_fk = True
         include_relationships = True
 

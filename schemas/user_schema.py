@@ -6,10 +6,10 @@ from models.user_model import User
 class UserSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = User
-        include_fk = True
         load_instance = True
-        exclude = ("_password",)
+        include_fk = True
         include_relationships = True
+        exclude = ("_password",)
 
     password = fields.Str(required=True)
 

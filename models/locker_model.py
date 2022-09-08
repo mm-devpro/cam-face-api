@@ -17,8 +17,8 @@ class Locker(db.Model):
     locked = db.Column(db.Boolean, default=True, server_default="1")
     digit_activation = db.Column(db.Boolean, default=True, server_default="1")
 
-    account_id = db.Column(db.Integer, db.ForeignKey('account.id'), nullable=False)
-    camera = db.relationship('Camera', backref=db.backref("locker"), uselist=False)
+    account_id = db.Column(db.Integer, db.ForeignKey("account.id"))
+    camera = db.relationship("Camera", backref=db.backref("locker"), lazy=True, uselist=False)
 
     def __repr__(self):
         return f'<Locker "{self.name}...">'

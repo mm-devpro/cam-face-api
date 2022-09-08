@@ -12,7 +12,7 @@ class Profile(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
 
-    access = db.relationship("Access", backref=db.backref('profile'), cascade='all, delete_orphan', lazy=True)
+    access = db.relationship("Access", backref=db.backref('profile'), cascade='all, delete-orphan', lazy=True)
 
     def __repr__(self):
         return f'<Profile "{self.surname + self.name}...">'

@@ -7,8 +7,8 @@ from marshmallow import fields
 class AccessSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Access
-        include_fk = True
         load_instance = True
+        include_fk = True
         include_relationships = True
     users = fields.List(fields.Nested(UserSchema))
 

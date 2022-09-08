@@ -9,13 +9,13 @@ from schemas.camera_schema import CameraSchema
 class AccountSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Account
-        include_fk = True
         load_instance = True
+        include_fk = True
         include_relationships = True
 
     users = fields.List(fields.Nested(UserSchema))
-    lockers = fields.List(fields.Nested(LockerSchema))
-    cameras = fields.List(fields.Nested(CameraSchema))
+    # lockers = fields.List(fields.Nested(LockerSchema))
+    # cameras = fields.List(fields.Nested(CameraSchema))
 
 
 account_schema = AccountSchema()
