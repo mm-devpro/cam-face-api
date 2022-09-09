@@ -14,7 +14,7 @@ from resources.auth_resource import LoginResource, LogoutResource, SignupResourc
     SIGNUP_ENDPOINT
 from resources.profile_resource import ProfileResource, PROFILE_ENDPOINT
 from resources.user_resource import UserResource, USER_ENDPOINT
-from resources.stream_resource import StreamResource, STREAM_ENDPOINT
+from resources.stream_handler import StreamHandler, STREAM_ENDPOINT
 
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
@@ -62,8 +62,8 @@ def create_app():
     @app.route(f"{STREAM_ENDPOINT}", methods=["GET"])
     def video_feed():
         source = request.args.get("source")
-        print(f"args: \n {source}")
-        camera = StreamResource(source)
+        app.app_context().push()
+        camera = StreamHandler(source)
         return Response(camera.gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
     # decoding cookie before each request
