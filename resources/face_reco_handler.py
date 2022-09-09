@@ -3,6 +3,8 @@ import time
 import os
 import cv2
 import numpy as np
+from flask import make_response, jsonify
+from flask_restful import Resource
 from models.profile_model import Profile
 from schemas.profile_schema import profiles_schema, profile_schema
 
@@ -10,7 +12,7 @@ from schemas.profile_schema import profiles_schema, profile_schema
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-class FrameHandler:
+class FrameHandler(Resource):
 
     def __init__(self, frame):
         self.frame = frame
@@ -33,23 +35,20 @@ class FrameHandler:
         return
 
 
-class FaceRecognitionHandler:
+class FaceRecognitionHandler(Resource):
 
-    def __init__(self, frame):
+    def __init__(self, frame, known_face_encodings, known_face_names):
         self.frame_handler = FrameHandler(frame)
         self.frame = self.frame_handler.frame
         self.face_encodings = []
-        self.known_face_encodings = []
+        self.known_face_encodings = known_face_encodings
         self.face_name = "unknown"
-        self.known_face_names = []
-
-    def _get_known_face_encodings_and_names(self):
-        profiles = Profile.query.all()
-        self.known_face_encodings = [profile.face_encoding for profile in profiles]
-        self.known_face_names = [profile.name for profile in profiles]
+        self.known_face_names = known_face_names
 
     def _locate_and_encode_face(self):
         self.face_locations = face_recognition.face_locations(self.frame)
+        if len(self.face_locations) < 1:
+            return
         self.face_encodings = face_recognition.face_encodings(self.frame, self.face_locations)
         # return only the first face if multiple faces are on the frame
         return
@@ -77,22 +76,18 @@ class FaceRecognitionHandler:
         :return:
         """
         """
-        1) GET KNOWN FACE ENCODINGS / NAMES
-        """
-        self._get_known_face_encodings_and_names()
-        """
-        2) RESIZE FRAME
+        1) RESIZE FRAME
         """
         self.frame_handler.resize_frame()
         """
-        3) CONVERT COLOR
+        2) CONVERT COLOR
         """
         self.frame_handler.convert_frame()
         """
-        4) LOCATE FACES AND ENCODE FACE FROM FRAME
+        3) LOCATE FACES AND ENCODE FACE FROM FRAME
         """
         self._locate_and_encode_face()
         """
-        5) FINALLY COMPARE THE ENCODED FACE TO KNOWN FACE ENCODINGS AND RETURN RESULT
+        4) FINALLY COMPARE THE ENCODED FACE TO KNOWN FACE ENCODINGS AND RETURN RESULT
         """
         self._compare_face()

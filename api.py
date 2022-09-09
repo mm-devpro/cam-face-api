@@ -7,14 +7,14 @@ from dotenv import load_dotenv
 from database import db
 from services.auth import decode_cookie
 from resources.access_resource import AccessResource, ACCESS_ENDPOINT
-from resources.camera_resource import CameraResource, CAMERA_ENDPOINT
+from resources.camera_resource import CameraResource, StreamResource, CAMERA_ENDPOINT, STREAM_ENDPOINT
 from resources.locker_resource import LockerResource, LOCKER_ENDPOINT
 from resources.account_resource import AccountResource, ACCOUNT_ENDPOINT
 from resources.auth_resource import LoginResource, LogoutResource, SignupResource, LOGOUT_ENDPOINT, LOGIN_ENDPOINT, \
     SIGNUP_ENDPOINT
 from resources.profile_resource import ProfileResource, PROFILE_ENDPOINT
 from resources.user_resource import UserResource, USER_ENDPOINT
-from resources.stream_handler import StreamHandler, STREAM_ENDPOINT
+from resources.stream_handler import StreamHandler
 
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
@@ -57,14 +57,7 @@ def create_app():
     api.add_resource(ProfileResource, PROFILE_ENDPOINT, f"{PROFILE_ENDPOINT}/<profile_id>")
     api.add_resource(SignupResource, SIGNUP_ENDPOINT)
     api.add_resource(UserResource, USER_ENDPOINT, f"{USER_ENDPOINT}/<user_id>")
-
-    # handling video feed from streaming cameras
-    @app.route(f"{STREAM_ENDPOINT}", methods=["GET"])
-    def video_feed():
-        source = request.args.get("source")
-        app.app_context().push()
-        camera = StreamHandler(source)
-        return Response(camera.gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    api.add_resource(StreamResource, STREAM_ENDPOINT)
 
     # decoding cookie before each request
     app.before_request_funcs.setdefault(None, [decode_cookie])
