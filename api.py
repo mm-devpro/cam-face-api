@@ -1,18 +1,20 @@
 from os import getenv, path
 import sys
-from flask import Flask
+from flask import Flask, Response, request
 from flask_cors import CORS
 from flask_restful import Api
 from dotenv import load_dotenv
 from database import db
 from services.auth import decode_cookie
+from resources.access_resource import AccessResource, ACCESS_ENDPOINT
+from resources.camera_resource import CameraResource, CAMERA_ENDPOINT
+from resources.locker_resource import LockerResource, LOCKER_ENDPOINT
 from resources.account_resource import AccountResource, ACCOUNT_ENDPOINT
 from resources.auth_resource import LoginResource, LogoutResource, SignupResource, LOGOUT_ENDPOINT, LOGIN_ENDPOINT, \
     SIGNUP_ENDPOINT
-from resources.camera_resource import CameraResource, CAMERA_ENDPOINT
-from resources.locker_resource import LockerResource, LOCKER_ENDPOINT
 from resources.profile_resource import ProfileResource, PROFILE_ENDPOINT
 from resources.user_resource import UserResource, USER_ENDPOINT
+from resources.stream_resource import StreamResource, STREAM_ENDPOINT
 
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
@@ -46,6 +48,7 @@ def create_app():
     api = Api(app)
 
     # routes
+    api.add_resource(AccessResource, ACCESS_ENDPOINT, f"{ACCESS_ENDPOINT}/<access_id>")
     api.add_resource(AccountResource, ACCOUNT_ENDPOINT, f"{ACCOUNT_ENDPOINT}/<account_id>")
     api.add_resource(CameraResource, CAMERA_ENDPOINT, f"{CAMERA_ENDPOINT}/<camera_id>")
     api.add_resource(LockerResource, LOCKER_ENDPOINT, f"{LOCKER_ENDPOINT}/<locker_id>")
@@ -55,6 +58,14 @@ def create_app():
     api.add_resource(SignupResource, SIGNUP_ENDPOINT)
     api.add_resource(UserResource, USER_ENDPOINT, f"{USER_ENDPOINT}/<user_id>")
 
+    # handling video feed from streaming cameras
+    @app.route(f"{STREAM_ENDPOINT}", methods=["GET"])
+    def video_feed():
+        source = request.args.get("source")
+        print(f"args: \n {source}")
+        camera = StreamResource(source)
+        return Response(camera.gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
     # decoding cookie before each request
     app.before_request_funcs.setdefault(None, [decode_cookie])
 
@@ -63,4 +74,4 @@ def create_app():
 
 if __name__ == "__main__":
     app = create_app()
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True, threaded=True)

@@ -1,7 +1,7 @@
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
-from models.access_model import Access
-from schemas.user_schema import UserSchema
 from marshmallow import fields
+from schemas.user_schema import UserSchema
+from models.access_model import Access
 
 
 class AccessSchema(SQLAlchemyAutoSchema):

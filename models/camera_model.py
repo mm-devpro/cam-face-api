@@ -10,6 +10,7 @@ class Camera(db.Model):
     __tablename__ = "camera"
 
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, server_default="camera")
     source = db.Column(db.String(255), nullable=False)
     active = db.Column(db.Boolean, default=False, server_default="0")
 

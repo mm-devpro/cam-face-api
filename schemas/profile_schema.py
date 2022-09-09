@@ -1,7 +1,7 @@
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from marshmallow import fields
-from models.profile_model import Profile
 from schemas.access_schema import AccessSchema
+from models.profile_model import Profile
 
 
 class ProfileSchema(SQLAlchemyAutoSchema):

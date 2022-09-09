@@ -69,7 +69,8 @@ class UserResource(Resource):
             # add new user to db
             db.session.add(new_user)
             # link new user to current account
-            new_user.account_id = g.cookie['user']['account']
+            new_user.account_id = self._curr_account
+
             db.session.commit()
             # get new user infos to send to front
             u = user_schema.dump(new_user)

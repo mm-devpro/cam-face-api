@@ -1,7 +1,7 @@
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from marshmallow import fields
-from models.locker_model import Locker
 from schemas.camera_schema import CameraSchema
+from models.locker_model import Locker
 
 
 class LockerSchema(SQLAlchemyAutoSchema):

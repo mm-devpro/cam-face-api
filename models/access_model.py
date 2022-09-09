@@ -9,7 +9,7 @@ class Access(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
-    group = db.Column(db.Enum(*PROFILE_GROUP.keys()), server_default="invite")
+    group = db.Column(db.Enum(*PROFILE_GROUP.keys()), server_default="inv")
     _password = db.Column(db.String(6), server_default="123456")
     access_lvl = db.Column(db.Enum(*LOCKER_ACCESS.keys()), nullable=False, server_default="0")
 

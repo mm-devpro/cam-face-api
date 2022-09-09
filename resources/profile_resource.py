@@ -3,7 +3,6 @@ from flask_restful import Resource
 from flask import request, abort, jsonify, make_response, g
 from database import db
 from models.profile_model import Profile
-from models.account_model import Account
 from models.access_model import Access
 from schemas.profile_schema import profile_schema, profiles_schema
 from schemas.access_schema import accesses_schema, access_schema
@@ -62,22 +61,24 @@ class ProfileResource(Resource):
             if 'dob' in json_data.keys():
                 json_data['dob'] = string_to_iso_format(json_data['dob'])
             # validate fields from request
-            val_data = {k: v for (k, v) in json_data.items() if k in PROFILE_VALIDATED_ARGS}
+            val_profile = {k: v for (k, v) in json_data.items() if k in PROFILE_VALIDATED_ARGS}
             # create new profile
-            new_profile = profile_schema.load(val_data, session=db.session)
+            new_profile = profile_schema.load(val_profile, session=db.session)
             # add profile to db
             db.session.add(new_profile)
             db.session.commit()
 
             # add link between profile and account to "access" table, take account_id from cookie
             val_access = {k: v for (k, v) in json_data.items() if k in ACCESS_VALIDATED_ARGS}
-            val_access['account_id'] = g.cookie['user']['account']
+            val_access['account_id'] = self._curr_account
             val_access['profile_id'] = new_profile.id
+            # add new access to db
             new_access = access_schema.load(val_access, session=db.session)
             db.session.add(new_access)
             db.session.commit()
-            # retrieve new profile infos to send to front
+            # retrieve new profile/access infos to send to front
             p = profile_schema.dump(new_profile)
+            a = access_schema.dump(new_access)
 
         except Exception as e:
             db.session.rollback()
@@ -87,7 +88,8 @@ class ProfileResource(Resource):
             return make_response(jsonify({
                 "status": "success",
                 "message": "profil créé avec succès",
-                "profile": p
+                "profile": p,
+                "access": a
             }), 201)
 
     def put(self, profile_id):
