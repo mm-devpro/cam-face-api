@@ -3,17 +3,16 @@ from flask_restful import Resource
 from flask import request, abort, jsonify, g, make_response, Response
 from database import db
 from models.camera_model import Camera
-from models.profile_model import Profile
 from schemas.camera_schema import cameras_schema, camera_schema
-from resources.stream_handler import StreamHandler
+from services.security_stream_handler import SecurityStreamHandler
 from services.variables import CAMERA_VALIDATED_GET_ARGS, CAMERA_VALIDATED_ARGS
 from services.auth import is_admin
 
-CAMERA_ENDPOINT = '/cam-api/v1/camera'
+CAMERAS_ENDPOINT = '/cam-api/v1/cameras'
 STREAM_ENDPOINT = '/cam-api/v1/stream'
 
 
-class CameraResource(Resource):
+class CamerasResource(Resource):
 
     def __init__(self):
         self._admin_val = is_admin(g, ['admin', 'super-admin'])
@@ -168,9 +167,5 @@ class StreamResource (Resource):
 
     def get(self):
         source = request.args.get("source")
-        # profiles = Profile.query.all()
-        # known_face_encodings = [profile.face_encoding for profile in profiles]
-        # known_face_names = [profile.name for profile in profiles]
-        # app.app_context().push()
-        camera = StreamHandler(source)
+        camera = SecurityStreamHandler(source)
         return Response(camera.gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')

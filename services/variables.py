@@ -38,6 +38,18 @@ LOCKER_ACCESS = {
     "5": "critical"
 }
 
+PROFILE_VALIDATION = [
+    "created",
+    "ok",
+    "verified",
+    "validated"
+]
+GENDER = [
+    "male",
+    "female",
+    "other"
+]
+
 # Validation args for "GET" Methods
 ACCESS_VALIDATED_GET_ARGS = ['group', 'password', 'profile_id', 'access_lvl', 'account_id']
 ACCOUNT_VALIDATED_GET_ARGS = ['name']
