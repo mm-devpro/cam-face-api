@@ -7,6 +7,7 @@ from schemas.camera_schema import cameras_schema, camera_schema
 from services.security_stream_handler import SecurityStreamHandler
 from services.variables import CAMERA_VALIDATED_GET_ARGS, CAMERA_VALIDATED_ARGS
 from services.auth import is_admin
+from events import Events
 
 CAMERAS_ENDPOINT = '/cam-api/v1/cameras'
 STREAM_ENDPOINT = '/cam-api/v1/stream'
@@ -165,7 +166,14 @@ class CamerasResource(Resource):
 
 class StreamResource (Resource):
 
+    def __init__(self):
+        self.events = Events()
+
     def get(self):
         source = request.args.get("source")
         camera = SecurityStreamHandler(source)
+        self.events.on_change()
+        camera.events.on_change()
+
         return Response(camera.gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+

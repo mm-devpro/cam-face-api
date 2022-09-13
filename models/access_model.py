@@ -13,8 +13,8 @@ class Access(db.Model):
     _password = db.Column(db.String(6), server_default="123456")
     access_lvl = db.Column(db.Enum(*LOCKER_ACCESS.keys()), nullable=False, server_default="0")
 
-    profile_id = db.Column(db.Integer, db.ForeignKey("profile.id"), nullable=False)
-    account_id = db.Column(db.Integer, db.ForeignKey("account.id"), nullable=False)
+    profile_id = db.Column(db.Integer, db.ForeignKey("profile.id", ondelete="CASCADE"), nullable=False,)
+    account_id = db.Column(db.Integer, db.ForeignKey("account.id", ondelete="CASCADE"), nullable=False)
 
     def __repr__(self):
         return f'<Profile "{self.surname + self.name}...">'

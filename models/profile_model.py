@@ -11,11 +11,13 @@ class Profile(db.Model):
     surname = db.Column(db.String(255), nullable=False)
     gender = db.Column(db.Enum(*GENDER))
     dob = db.Column(db.Date(), nullable=True)
-    validated = db.Column(db.Enum(*PROFILE_VALIDATION), server_default="created")
+    encodings = db.Column(db.PickleType(), nullable=False)
+    val_num = db.Column(db.Integer)
+    validated = db.Column(db.Enum(*PROFILE_VALIDATION.values()), server_default="created")
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
 
-    access = db.relationship("Access", backref=db.backref('profile'), cascade='all, delete-orphan', lazy=True)
+    access = db.relationship("Access", backref='profile', cascade="all, delete-orphan", passive_deletes=True, lazy=True)
 
     def __repr__(self):
         return f'<Profile "{self.surname + self.name}...">'

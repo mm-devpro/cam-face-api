@@ -14,8 +14,8 @@ class Camera(db.Model):
     source = db.Column(db.String(255), nullable=False)
     active = db.Column(db.Boolean, default=False, server_default="0")
 
-    account_id = db.Column(db.Integer, db.ForeignKey("account.id"))
-    locker_id = db.Column(db.Integer, db.ForeignKey("locker.id"))
+    account_id = db.Column(db.Integer, db.ForeignKey("account.id", ondelete="CASCADE"))
+    locker_id = db.Column(db.Integer, db.ForeignKey("locker.id"), nullable=True)
 
     def __repr__(self):
         return f'<Camera "{self.source}...">'

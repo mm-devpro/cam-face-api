@@ -1,4 +1,5 @@
 import logging
+import pickle
 from flask_restful import Resource
 from flask import request, abort, jsonify, make_response, g
 from database import db
@@ -7,6 +8,7 @@ from models.access_model import Access
 from schemas.profile_schema import profile_schema, profiles_schema
 from schemas.access_schema import accesses_schema, access_schema
 from services.variables import PROFILE_VALIDATED_GET_ARGS, ACCESS_VALIDATED_GET_ARGS, ACCESS_VALIDATED_ARGS, PROFILE_VALIDATED_ARGS
+from services.profile_validation import KnownFacesJSONHandler
 from services.methods import string_to_iso_format
 from services.auth import is_admin
 
@@ -22,6 +24,8 @@ class ProfileResource(Resource):
 
     def get(self, profile_id=None):
         try:
+            # re write the JSON file containing profile data
+            KnownFacesJSONHandler().reload_file()
             if not profile_id:
                 args = {arg: request.args.get(arg) for arg in request.args if arg in PROFILE_VALIDATED_GET_ARGS}
                 profiles = self._get_all(args)
@@ -60,6 +64,8 @@ class ProfileResource(Resource):
             # change date format of 'dob' to fit with db
             if 'dob' in json_data.keys():
                 json_data['dob'] = string_to_iso_format(json_data['dob'])
+            # change bob format of encodings to fit with db
+            json_data['encodings'] = str(json_data['encodings'])
             # validate fields from request
             val_profile = {k: v for (k, v) in json_data.items() if k in PROFILE_VALIDATED_ARGS}
             # create new profile

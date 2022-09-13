@@ -29,7 +29,7 @@ class User(db.Model):
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
     last_login = db.Column(db.DateTime(timezone=True), nullable=True)
 
-    account_id = db.Column(db.Integer, db.ForeignKey("account.id"))
+    account_id = db.Column(db.Integer, db.ForeignKey("account.id", ondelete="CASCADE"))
 
     def __repr__(self):
         return f'<User "{self.username}...">'

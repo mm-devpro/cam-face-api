@@ -38,12 +38,12 @@ LOCKER_ACCESS = {
     "5": "critical"
 }
 
-PROFILE_VALIDATION = [
-    "created",
-    "ok",
-    "verified",
-    "validated"
-]
+PROFILE_VALIDATION = {
+    1: "created",
+    2: "ok",
+    3: "verified",
+    4: "validated"
+}
 GENDER = [
     "male",
     "female",
@@ -55,12 +55,12 @@ ACCESS_VALIDATED_GET_ARGS = ['group', 'password', 'profile_id', 'access_lvl', 'a
 ACCOUNT_VALIDATED_GET_ARGS = ['name']
 CAMERA_VALIDATED_GET_ARGS = ['name', 'source', 'active', 'locker_id']
 LOCKER_VALIDATED_GET_ARGS = ['name', 'access_lvl', 'type', 'locked', 'digit_activation']
-PROFILE_VALIDATED_GET_ARGS = ['name', 'surname', 'dob']
+PROFILE_VALIDATED_GET_ARGS = ['name', 'surname', 'dob', 'gender', 'val_num', 'validated']
 USER_VALIDATED_GET_ARGS = ['username', 'email', 'role']
 # Validation args for "POST" "PUT" "DELETE" Methods
 ACCESS_VALIDATED_ARGS = ['group', 'password', 'access_lvl']
 ACCOUNT_VALIDATED_ARGS = ['name']
 CAMERA_VALIDATED_ARGS = ['name', 'source', 'active', 'locker_id']
 LOCKER_VALIDATED_ARGS = ['name', 'access_lvl', 'type', 'locked', 'digit_activation']
-PROFILE_VALIDATED_ARGS = ['name', 'surname', 'dob']
+PROFILE_VALIDATED_ARGS = ['name', 'surname', 'dob', 'encodings', 'gender', 'val_num', 'validated']
 USER_VALIDATED_ARGS = ['username', 'email', 'role', 'password', 'img']
