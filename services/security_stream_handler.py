@@ -12,7 +12,7 @@ from services.profile_validation import KnownFacesJSONHandler, FrameHandler, Pro
 from models.profile_model import Profile
 
 
-class SecurityStreamHandler(BaseCamera, Resource):
+class StreamHandler(BaseCamera, Resource):
 
     def __init__(self, camera_src):
         if str(camera_src)[0].isdigit():

@@ -4,7 +4,7 @@ from flask import request, abort, jsonify, g, make_response, Response
 from database import db
 from models.camera_model import Camera
 from schemas.camera_schema import cameras_schema, camera_schema
-from services.security_stream_handler import SecurityStreamHandler
+from services.security_stream_handler import StreamHandler
 from services.variables import CAMERA_VALIDATED_GET_ARGS, CAMERA_VALIDATED_ARGS
 from services.auth import is_admin
 from events import Events
@@ -171,7 +171,7 @@ class StreamResource (Resource):
 
     def get(self):
         source = request.args.get("source")
-        camera = SecurityStreamHandler(source)
+        camera = StreamHandler(source)
 
         return Response(camera.gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
