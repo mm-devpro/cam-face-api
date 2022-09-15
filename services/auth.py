@@ -84,3 +84,6 @@ def require_login(func):
 
 def is_admin(g, type:list):
     return g.cookie['user']['role'] in type
+
+
+print(    "congrats: C'est votre fils Noah!!"    )

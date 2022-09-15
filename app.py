@@ -6,6 +6,7 @@ from flask_restful import Api
 from dotenv import load_dotenv
 from database import db
 from services.auth import decode_cookie
+# routes import
 from resources.access_resource import AccessResource, ACCESS_ENDPOINT
 from resources.cameras_resource import CamerasResource, StreamResource, CAMERAS_ENDPOINT, STREAM_ENDPOINT
 from resources.locker_resource import LockerResource, LOCKER_ENDPOINT
@@ -32,21 +33,21 @@ def create_app():
     app = Flask(__name__)
     # app configuration
     app.config['SECRET_KEY'] = SECRET_KEY
-    app.config["JWT_SECRET_KEY"] = JWT_SECRET_KEY
     app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{DB_USER}:{DB_PWD}@{MYSQL_URL}:{MYSQL_PORT}/{MYSQL_DB}'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+    app.config['JWT_SECRET_KEY'] = JWT_SECRET_KEY
 
     # initiate api from flask-restful, and add cors configuration
-    # api = Api(app)
     CORS(app, resources={r"/cam-api/v1/*": {"origins": "*"}})
 
     # initiate app database
     with app.app_context():
         db.init_app(app)
 
+    # initiate api from Flask_RESTful
     api = Api(app)
 
-    # routes
+    # routes handling
     api.add_resource(AccessResource, ACCESS_ENDPOINT, f"{ACCESS_ENDPOINT}/<access_id>")
     api.add_resource(AccountResource, ACCOUNT_ENDPOINT, f"{ACCOUNT_ENDPOINT}/<account_id>")
     api.add_resource(CamerasResource, CAMERAS_ENDPOINT, f"{CAMERAS_ENDPOINT}/<camera_id>")

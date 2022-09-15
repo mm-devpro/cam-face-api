@@ -13,7 +13,7 @@ SIGNUP_ENDPOINT = '/cam-api/v1/signup'
 
 class LoginResource(Resource):
 
-    def get(self):
+    def post(self):
         """
         LoginResource LOGIN method. Check user credentials and validate or not
         :return: user infos, token in cookie
@@ -54,7 +54,7 @@ class LoginResource(Resource):
 
 class LogoutResource(Resource):
 
-    def get(self):
+    def post(self):
         g.cookie = {}
         response = make_response("Logged out", 200)
         response.set_cookie("user", "")

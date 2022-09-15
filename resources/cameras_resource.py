@@ -172,8 +172,6 @@ class StreamResource (Resource):
     def get(self):
         source = request.args.get("source")
         camera = SecurityStreamHandler(source)
-        self.events.on_change()
-        camera.events.on_change()
 
         return Response(camera.gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 

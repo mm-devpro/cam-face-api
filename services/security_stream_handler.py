@@ -23,12 +23,13 @@ class SecurityStreamHandler(BaseCamera, Resource):
             self.src = camera_src
         self.video = cv2.VideoCapture(self.src)
         self.ret, self.frame = self.video.read()
-        self.process_this_frame = True
+        self.process_this_frame = 1
         self.known_faces = KnownFacesJSONHandler().data
         self.known_face_ids = list(self.known_faces.loc[:, "id"])
         self.known_face_encodings = [literal_eval(x) for x in self.known_faces.loc[:, "encodings"]]
         self.face_id = int(0)
         self.face_validator = int(0)
+        self.face_unknown = int(0)
         self.validated = False
         self.events = Events()
         self.events.on_change += self.__on_validation
@@ -55,10 +56,10 @@ class SecurityStreamHandler(BaseCamera, Resource):
 
                 if self.frame is None:
                     continue
-
-                if self.frame is not None:
-                    # Only process every other frame of video to save time
-                    if self.process_this_frame:
+                else:
+                    self.process_this_frame += 1
+                    # Only process every 10 frames
+                    if self.process_this_frame == 10:
                         """
                         1) Handle Frame
                         """
@@ -66,11 +67,11 @@ class SecurityStreamHandler(BaseCamera, Resource):
                         # resize frame
                         fr_handler.resize_frame()
                         # convert color to be readable by face_recognition algorithm
-                        fr_handler.convert_frame()
+                        fr_handler.convert_BGR2RGB()
                         """
                         2) locate and reckon faces
                         """
-                        face_reco = ProfileValidator(fr_handler.frame, self.known_face_encodings, self.known_face_ids)
+                        face_reco = ProfileValidator(fr_handler.retouched_frame, self.known_face_encodings, self.known_face_ids)
                         face_reco.locate_faces()
                         # if there is at least one located face
                         if len(face_reco.face_locations) > 0:
@@ -90,11 +91,13 @@ class SecurityStreamHandler(BaseCamera, Resource):
                                         self.face_validator = 1
                                 elif self.face_validator >= 5:
                                     self.validated = True
-
-                            # else:
-                            #     fr_handler.save_to_folder(3)
-                            #     return
-
+                            else:
+                                self.face_unknown += 1
+                                # wait for 10 processes of unknown faces to store it into frames/account_id folder
+                                if self.face_unknown == 10:
+                                    fr_handler.save_to_folder(3)
+                                    self.face_unknown = 0
+                        self.process_this_frame = 1
 
                         for (top, right, bottom, left) in face_reco.face_locations:
                             # Scale back up face locations since the frame we detected in was scaled to 1/4 size
@@ -105,8 +108,6 @@ class SecurityStreamHandler(BaseCamera, Resource):
 
                             # Draw a box around the face
                             cv2.rectangle(self.frame, (left, top), (right, bottom), (0, 0, 255), 2)
-
-                self.process_this_frame = not self.process_this_frame
 
                 # encode the frame in JPEG format
                 ret, jpeg = cv2.imencode('.jpg', self.frame)
