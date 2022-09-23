@@ -78,7 +78,7 @@ class UserResource(Resource):
         except Exception as e:
             db.session.rollback()
             logging.warning(e)
-            abort(403, "Cet utilisateur est deja existant")
+            abort(403, f"Un probleme est survenu : {e}")
         else:
             return make_response(jsonify({
                 "status": "success",

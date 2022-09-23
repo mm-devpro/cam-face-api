@@ -7,7 +7,6 @@ from schemas.camera_schema import cameras_schema, camera_schema
 from services.security_stream_handler import StreamHandler
 from services.variables import CAMERA_VALIDATED_GET_ARGS, CAMERA_VALIDATED_ARGS
 from services.auth import is_admin
-from events import Events
 
 CAMERAS_ENDPOINT = '/cam-api/v1/cameras'
 STREAM_ENDPOINT = '/cam-api/v1/stream'

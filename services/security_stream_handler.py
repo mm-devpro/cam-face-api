@@ -6,7 +6,6 @@ from threading import Lock
 import face_recognition
 from flask import g
 from flask_restful import Resource
-from events import Events
 from services.base_camera import BaseCamera
 from services.profile_validation import KnownFacesJSONHandler, FrameHandler, ProfileValidator
 from models.profile_model import Profile
@@ -31,15 +30,9 @@ class StreamHandler(BaseCamera, Resource):
         self.face_validator = int(0)
         self.face_unknown = int(0)
         self.validated = False
-        self.events = Events()
-        self.events.on_change += self.__on_validation
 
     def __del__(self):
         self.video.release()
-
-    def __on_validation(self):
-        self.validated = True
-        print(self.face_id)
 
     def gen_frames(self):
         lock = Lock()
@@ -120,6 +113,3 @@ class StreamHandler(BaseCamera, Resource):
 
                 if cv2.waitKey(1) == ord('q'):
                     break
-
-    def unlock(self):
-        pass
